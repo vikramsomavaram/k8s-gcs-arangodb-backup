@@ -1,0 +1,32 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: arango-backup
+spec:
+  schedule: "0 20 * * 0"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          volumes:
+          - name: google-cloud-key
+            secret:
+              secretName: gcs-key
+          containers:
+          - name: arango-backup
+            image: vikram412/gcloud-arangodb-backup
+            volumeMounts:
+            - name: google-cloud-key
+              mountPath: /var/secrets/google
+            env:
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: /var/secrets/google/key.json
+            - name:  ARANGO_ENDPOINT
+              value: < Replace your arangodb endpoint here >
+            - name:  ARANGO_USER
+              value: < Replace your arangodb user here >
+            - name:  ARANGO_PASS
+              value: < Replace your arangodb password here >
+            - name:  BUCKET_NAME
+              value: < Nmae of the GCS bucket to upload the backups>
+          restartPolicy: OnFailure
